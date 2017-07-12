@@ -1,0 +1,77 @@
+<!-- This is a static file -->
+<!-- served from your routes in server.js -->
+
+<!-- You might want to try something fancier: -->
+<!-- html/nunjucks docs: https://mozilla.github.io/nunjucks/ -->
+<!-- pug: https://pugjs.org/ -->
+<!-- haml: http://haml.info/ -->
+<!-- hbs(handlebars): http://handlebarsjs.com/ -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Your Mettle: Fruits Edition</title>
+    <meta name="description" content="A challenge for your fruit organizing skills.">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <header>
+      <h1>
+        Test Your Mettle: Fruits Edition
+      </h1>
+    </header>
+
+    <main>
+        <h2 id="abstract">Abstract</h2>
+        <p>Write a program that loads a text file with fruit inventory data, processes it, and displays the results on screen.</p>
+        <h2 id="requirements">Requirements</h2>
+        <h3 id="general-requirements">General requirements</h3>
+        <p>Try to write your solution in a professional manner, not like a one-off script. As this is an interview problem you can create
+            a more complex solution than the problem requires in order to demonstrate your knowledge and skill. However, keep in
+            mind that working and simple is far better than complex and broken.</p>
+        <h3 id="specific-requirements">Specific requirements</h3>
+        <ul>
+            <li>Fetch the data from one of the data sources listed below. You should start with the static data, and then if possible
+                make sure your solution also works on the dynamic data source.
+                <ul>
+                    <li>Focus on the static data: getting it to work with the dynamic data source is extra credit, but failing to get
+                        it working with the static data will count against you.</li>
+                </ul>
+            </li>
+            <li>Deduplicate the fruits by keeping only the first occurence of each fruit.</li>
+            <li>Filter the fruits by removing all fruit with a price less than $1.</li>
+            <li>Sort the fruits by quantity, from most to least.</li>
+        </ul>
+        <h2 id="data-sources">Data sources</h2>
+        <ul>
+            <li>Static sample: <a href="https://resonant-shoulder.glitch.me/sample-data.txt" class="uri">https://resonant-shoulder.glitch.me/sample-data.txt</a></li>
+            <li>Dynamic data: <a href="https://resonant-shoulder.glitch.me/dynamic-data.txt">https://resonant-shoulder.glitch.me/dynamic-data.txt</a></li>
+        </ul>
+        <h2 id="notes-on-data-quality-and-variety">Notes on data quality and variety</h2>
+        <ul>
+            <li>You can assume the data was input manually, so there may be extra or missing spaces within a column. However, columns
+                will align vertically.</li>
+            <li>The only mass units involved will be grams and kilograms, in the form of the standard abbreviations <code>g</code> and
+                <code>kg</code>.</li>
+            <li>Price will always be in dollars ($).</li>
+        </ul>
+    </main>
+
+    <footer>
+      <a href="https://glitch.com">
+        Remix this in Glitch
+      </a>
+    </footer>
+
+    <!-- Your web-app is https, so your scripts need to be too -->
+    <script src="https://code.jquery.com/jquery-2.2.1.min.js"
+            integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="
+            crossorigin="anonymous"></script>
+    <script src="/client.js"></script>
+
+  </body>
+</html>
