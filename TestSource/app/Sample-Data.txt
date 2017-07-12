@@ -1,0 +1,19 @@
+Product name            Amount          Unit price       
+=========================================================
+Orange                  75kg            $3.12            
+Cherry                  220 g           $11              
+Grape                   750 g           $11              
+Kiwi                    900g            $11              
+Banana                  643g            $120             
+Apple (green)           25kg            $42              
+Orange                  75kg            $3.12            
+Pear                    1.12 kg         $.995            
+Apple                   3 kg            $1               
+Corn                    620 g           $1.1             
+Clementine              776 g           $66              
+Banana                  1.12 kg         $100             
+Pineapple               14 kg           $1.1             
+Lemon                   1100 g          $0.5             
+Pear                    870g            $6               
+Watermelon              7.5 kg          $0.95            
+Red grapes              1.5 kg          $6.6             
