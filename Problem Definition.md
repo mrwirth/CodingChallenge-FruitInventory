@@ -12,7 +12,7 @@ Try to write your solution in a professional manner, not like a one-off script. 
 * Fetch the data from one of the data sources listed below.  You should start with the static data, and then if possible make sure your solution also works on the dynamic data source.
     * Focus on the static data: getting your solution to work with the dynamic data source is extra credit, but failing to get it working with the static data will count against you.
 * Deduplicate the fruits by keeping only the first occurence of each fruit.
-* Filter the fruits by removing all fruit with a price less than $1.
+* Filter the fruits by removing all fruit with a unit price less than $30.
 * Sort the fruits by quantity, from most to least.
 
 ## Data sources

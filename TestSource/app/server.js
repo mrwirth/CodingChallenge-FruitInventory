@@ -81,9 +81,9 @@ var createColumns = function (minNameLength) {
   // each length has two added onto the end to ensure each column is
   // separated by at least a double column of spaces.
   var nameLength = minNameLength + Math.floor(Math.random() * 11) + 2;
-  var amountLength = 6 + 1 + 2 + Math.floor(Math.random() * 11) + 2; // ###### + " " + "kg"
-  var priceLength = 1 + 6 + Math.floor(Math.random() * 11) + 2; // "$" + ######
-  var header = "Product name".padEnd(nameLength) + "Amount".padEnd(amountLength) + "Price".padEnd(priceLength);
+  var amountLength = 6 + 1 + 2 + Math.floor(Math.random() * 11) + 2; // ###.## + " " + "kg"
+  var priceLength = "Unit Price".length + Math.floor(Math.random() * 11) + 2;
+  var header = "Product name".padEnd(nameLength) + "Amount".padEnd(amountLength) + "Unit price".padEnd(priceLength);
   header = header + "\n" + "=".repeat(nameLength+amountLength+priceLength) + "\n";
 
   return {
@@ -99,10 +99,10 @@ var createRow = function (columns) {
   var amountLength = columns.amountLength;
   var priceLength = columns.priceLength;
   return function(fruit) {
-    var amount = Math.floor(Math.random() * 100000) / 100;
+    var amount = Math.floor(Math.abs(Math.random()-Math.random()) * 100000) / 100;
     var amountUnit = Math.floor(Math.random() * 2) >= 1 ? "kg" : "g";
     var amountUnit = (Math.floor(Math.random() * 2) >= 1 ? " " : "") + amountUnit;
-    var price = Math.floor(Math.random() * 100000) / 100;
+    var price = Math.floor(Math.abs(Math.random()-Math.random()) * 10000) / 100;
 
     return fruit.padEnd(nameLength) + (amount + amountUnit).padEnd(amountLength) + ("$" + price).padEnd(priceLength);
   }
