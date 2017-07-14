@@ -1,12 +1,3 @@
-<!-- This is a static file -->
-<!-- served from your routes in server.js -->
-
-<!-- You might want to try something fancier: -->
-<!-- html/nunjucks docs: https://mozilla.github.io/nunjucks/ -->
-<!-- pug: https://pugjs.org/ -->
-<!-- haml: http://haml.info/ -->
-<!-- hbs(handlebars): http://handlebarsjs.com/ -->
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -33,6 +24,8 @@
         <p>Try to write your solution in a professional manner, not like a one-off script. As this is an interview problem you can create
             a more complex solution than the problem requires in order to demonstrate your knowledge and skill. However, keep in
             mind that working and simple is far better than complex and broken.</p>
+        <p>You may write solution in the language and environment of your choice.  Googling is allowed, but excessive copying <em>may</em>
+            count against you.</p>
         <h3 id="specific-requirements">Specific requirements</h3>
         <ul>
             <li>Fetch the data from one of the data sources listed below. You should start with the static data, and then if possible
@@ -42,9 +35,11 @@
                         it working with the static data will count against you.</li>
                 </ul>
             </li>
-            <li>Deduplicate the fruits by keeping only the first occurence of each fruit.</li>
+            <li>Deduplicate the fruits by keeping only the first occurrence of each fruit.</li>
             <li>Filter the fruits by removing all fruit with a unit price less than $30.</li>
             <li>Sort the fruits by quantity, from most to least.</li>
+            <li>Presented the results as a table with its columns in the following order: Product name, Price, Amount.  A table header is
+                optional, and the table need not be in HTML.</li>
         </ul>
         <h2 id="data-sources">Data sources</h2>
         <ul>
@@ -60,18 +55,5 @@
             <li>Price will always be in dollars ($).</li>
         </ul>
     </main>
-
-    <footer>
-      <a href="https://glitch.com">
-        Remix this in Glitch
-      </a>
-    </footer>
-
-    <!-- Your web-app is https, so your scripts need to be too -->
-    <script src="https://code.jquery.com/jquery-2.2.1.min.js"
-            integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="
-            crossorigin="anonymous"></script>
-    <script src="/client.js"></script>
-
   </body>
 </html>

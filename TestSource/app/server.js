@@ -38,74 +38,94 @@ app.get("/", function (request, response) {
 
 app.get("/dynamic-data.txt", function (request, response) {
   response.set({"Content-Type":"text/plain; charset=UTF-8"});
-  response.send(dynamicData());
+  dynamicData(response);
 });
 
-var dynamicData = function() {
-  var fruits = fs.readFileSync('fruits.txt', 'utf8');
-  fruits = fruits.split('\n');
-  fruits = shuffle(fruits);
-  var n = Math.floor(Math.random() * (25)) + 8; // arbitrary sizes, nothing special.
-  fruits = fruits.slice(0, n);
-  fruits = fruits.concat(fruits.slice(0, 3)); //take 3 duplicates.  Yes, another arbitrary number.
-  fruits = shuffle(fruits);
-  //build inventory rows
-  var minNameLength = fruits.reduce(function(maxLength, fruit) {
-    return fruit.length > maxLength ? fruit.length : maxLength;
-  }, 0) + 2;
-  var columns = createColumns(minNameLength);
-  var inventory = fruits.map(createRow(columns));
-  return columns.header + inventory.join('\n');
+const dynamicData = function(response) {
+  fs.readFile('fruits.txt', 'utf8', function(err, fruits) {
+    if (err) throw err;
+    // Get fruit selection
+    fruits = fruits.split('\n');
+    fruits = shuffle(fruits);
+    const n = Math.floor(Math.random() * (25)) + 8; // Arbitrary sizes, nothing special.
+    fruits = fruits.slice(0, n);
+    fruits = fruits.concat(fruits.slice(0, 3)); // Take 3 duplicates.  Yes, another arbitrary number.
+    fruits = shuffle(fruits);
+    // Build inventory table
+    const minNameLength = fruits.reduce(function(maxLength, fruit) {
+      return fruit.length > maxLength ? fruit.length : maxLength;
+    }, 0) + 2;
+    const columns = createColumns(minNameLength);
+    const inventory = fruits.map(createRow(columns.columns));
+
+    response.send(columns.header + '\n' + inventory.join('\n'));
+  });
 }
 
 // From https://bost.ocks.org/mike/shuffle/
-var shuffle = function(array) {
-  var m = array.length, t, i;
-
+const shuffle = function(array) {
+  let m = array.length, t, i;
   // While there remain elements to shuffle…
   while (m) {
-
     // Pick a remaining element…
     i = Math.floor(Math.random() * m--);
-
     // And swap it with the current element.
     t = array[m];
     array[m] = array[i];
     array[i] = t;
   }
-
   return array;
 }
 
-var createColumns = function (minNameLength) {
-  // each length has two added onto the end to ensure each column is
+const createColumns = function (minNameLength) {
+  // Each length has two added onto the end to ensure each column is
   // separated by at least a double column of spaces.
-  var nameLength = minNameLength + Math.floor(Math.random() * 11) + 2;
-  var amountLength = 6 + 1 + 2 + Math.floor(Math.random() * 11) + 2; // ###.## + " " + "kg"
-  var priceLength = "Unit Price".length + Math.floor(Math.random() * 11) + 2;
-  var header = "Product name".padEnd(nameLength) + "Amount".padEnd(amountLength) + "Unit price".padEnd(priceLength);
-  header = header + "\n" + "=".repeat(nameLength+amountLength+priceLength) + "\n";
+  const columns = [
+    {
+      id: "name",
+      name: "Product name",
+      length: minNameLength + Math.floor(Math.random() * 11) + 2
+    },
+    {
+      id: "amount",
+      name: "Amount",
+      length: 6 + 1 + 2 + Math.floor(Math.random() * 11) + 2 // ###.## + " " + "kg"
+    },
+    {
+      id: "price",
+      name: "Unit price",
+      length: "Unit Price".length + Math.floor(Math.random() * 11) + 2
+    }
+  ];
+  shuffle(columns);
+  const header = columns.reduce((acc, column) => acc + (column.name).padEnd(column.length), "");
+  const divider = "=".repeat(columns.reduce((acc, column) => acc + column.length, 0));
 
   return {
-    header: header,
-    nameLength: nameLength,
-    amountLength: amountLength,
-    priceLength: priceLength
+    header: header + '\n' + divider,
+    columns: columns
   };
 }
 
-var createRow = function (columns) {
-  var nameLength = columns.nameLength;
-  var amountLength = columns.amountLength;
-  var priceLength = columns.priceLength;
+const createRow = function (columns) {
+  const lengths = columns.reduce((map, column) => map.set(column.id, column.length), new Map());
   return function(fruit) {
-    var amount = Math.floor(Math.abs(Math.random()-Math.random()) * 100000) / 100;
-    var amountUnit = Math.floor(Math.random() * 2) >= 1 ? "kg" : "g";
-    var amountUnit = (Math.floor(Math.random() * 2) >= 1 ? " " : "") + amountUnit;
-    var price = Math.floor(Math.abs(Math.random()-Math.random()) * 10000) / 100;
-
-    return fruit.padEnd(nameLength) + (amount + amountUnit).padEnd(amountLength) + ("$" + price).padEnd(priceLength);
+    const values = new Map();
+    values.set("name", fruit.padEnd(lengths.get("name")));
+    const amount = Math.floor(gammaDistribution(2.2) * 200000) / 100;
+    const space = Math.floor(Math.random() * 2) >= 1 ? " " : "";
+    const amountUnit = Math.floor(Math.random() * 2) >= 1 ? "kg" : "g";
+    values.set("amount", (amount + space + amountUnit).padEnd(lengths.get("amount")));
+    const price = Math.floor(gammaDistribution(2.2) * 10000) / 100;
+    values.set("price", ("$" + price).padEnd(lengths.get("price")));
+    return columns.reduce((row, column) => row + values.get(column.id), "");
   }
+}
+
+// From https://stackoverflow.com/a/11383334
+// Gamma values > 1 will bias leftward, < 1 rightward.
+const gammaDistribution = function (gamma) {
+    return Math.pow(Math.random(), gamma);    // mix full range and bias
 }
 
 // listen for requests :)
