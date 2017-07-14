@@ -38,24 +38,28 @@ app.get("/", function (request, response) {
 
 app.get("/dynamic-data.txt", function (request, response) {
   response.set({"Content-Type":"text/plain; charset=UTF-8"});
-  response.send(dynamicData());
+  dynamicData(response);
 });
 
-const dynamicData = function() {
-  let fruits = fs.readFileSync('fruits.txt', 'utf8');
-  fruits = fruits.split('\n');
-  fruits = shuffle(fruits);
-  const n = Math.floor(Math.random() * (25)) + 8; // arbitrary sizes, nothing special.
-  fruits = fruits.slice(0, n);
-  fruits = fruits.concat(fruits.slice(0, 3)); //take 3 duplicates.  Yes, another arbitrary number.
-  fruits = shuffle(fruits);
-  //build inventory rows
-  const minNameLength = fruits.reduce(function(maxLength, fruit) {
-    return fruit.length > maxLength ? fruit.length : maxLength;
-  }, 0) + 2;
-  const columns = createColumns(minNameLength);
-  const inventory = fruits.map(createRow(columns.columns));
-  return columns.header + '\n' + inventory.join('\n');
+const dynamicData = function(response) {
+  fs.readFile('fruits.txt', 'utf8', function(err, fruits) {
+    if (err) throw err;
+    fruits = fruits.split('\n');
+    fruits = shuffle(fruits);
+    const n = Math.floor(Math.random() * (25)) + 8; // Arbitrary sizes, nothing special.
+    fruits = fruits.slice(0, n);
+    fruits = fruits.concat(fruits.slice(0, 3)); // Take 3 duplicates.  Yes, another arbitrary number.
+    fruits = shuffle(fruits);
+
+    // Build inventory table
+    const minNameLength = fruits.reduce(function(maxLength, fruit) {
+      return fruit.length > maxLength ? fruit.length : maxLength;
+    }, 0) + 2;
+    const columns = createColumns(minNameLength);
+    const inventory = fruits.map(createRow(columns.columns));
+
+    response.send(columns.header + '\n' + inventory.join('\n'));
+  });
 }
 
 // From https://bost.ocks.org/mike/shuffle/
