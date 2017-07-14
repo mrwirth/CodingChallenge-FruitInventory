@@ -55,7 +55,7 @@ const dynamicData = function() {
   }, 0) + 2;
   const columns = createColumns(minNameLength);
   const inventory = fruits.map(createRow(columns.columns));
-  return columns.header + inventory.join('\n');
+  return columns.header + '\n' + inventory.join('\n');
 }
 
 // From https://bost.ocks.org/mike/shuffle/
@@ -78,7 +78,7 @@ const shuffle = function(array) {
 }
 
 const createColumns = function (minNameLength) {
-  // each length has two added onto the end to ensure each column is
+  // Each length has two added onto the end to ensure each column is
   // separated by at least a double column of spaces.
   const columns = [
     {
@@ -111,15 +111,21 @@ const createRow = function (columns) {
   const lengths = columns.reduce((map, column) => map.set(column.id, column.length), new Map());
   return function(fruit) {
     const values = new Map();
-    values.set("name", fruit.padEnd(lengths.name));
-    const amount = Math.floor(Math.abs(Math.random()-Math.random()) * 100000) / 100;
+    values.set("name", fruit.padEnd(lengths.get("name")));
+    const amount = Math.floor(gammaDistribution(2.2) * 200000) / 100;
     const space = Math.floor(Math.random() * 2) >= 1 ? " " : "";
     const amountUnit = Math.floor(Math.random() * 2) >= 1 ? "kg" : "g";
-    values.set("amount", (amount + space + amountUnit).padEnd(lengths.amount));
-    const price = Math.floor(Math.abs(Math.random()-Math.random()) * 10000) / 100;
-    values.set("price", ("$" + price).padEnd(lengths.price));
-    return columns.reduce((row, column) => row + values.get(column.id));
+    values.set("amount", (amount + space + amountUnit).padEnd(lengths.get("amount")));
+    const price = Math.floor(gammaDistribution(2.2) * 10000) / 100;
+    values.set("price", ("$" + price).padEnd(lengths.get("price")));
+    return columns.reduce((row, column) => row + values.get(column.id), "");
   }
+}
+
+// From https://stackoverflow.com/a/11383334
+// Gamma values > 1 will bias leftward, < 1 rightward.
+const gammaDistribution = function (gamma) {
+    return Math.pow(Math.random(), gamma);    // mix full range and bias
 }
 
 // listen for requests :)
