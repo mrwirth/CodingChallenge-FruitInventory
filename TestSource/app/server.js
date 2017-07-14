@@ -44,13 +44,13 @@ app.get("/dynamic-data.txt", function (request, response) {
 const dynamicData = function(response) {
   fs.readFile('fruits.txt', 'utf8', function(err, fruits) {
     if (err) throw err;
+    // Get fruit selection
     fruits = fruits.split('\n');
     fruits = shuffle(fruits);
     const n = Math.floor(Math.random() * (25)) + 8; // Arbitrary sizes, nothing special.
     fruits = fruits.slice(0, n);
     fruits = fruits.concat(fruits.slice(0, 3)); // Take 3 duplicates.  Yes, another arbitrary number.
     fruits = shuffle(fruits);
-
     // Build inventory table
     const minNameLength = fruits.reduce(function(maxLength, fruit) {
       return fruit.length > maxLength ? fruit.length : maxLength;
@@ -65,19 +65,15 @@ const dynamicData = function(response) {
 // From https://bost.ocks.org/mike/shuffle/
 const shuffle = function(array) {
   let m = array.length, t, i;
-
   // While there remain elements to shuffle…
   while (m) {
-
     // Pick a remaining element…
     i = Math.floor(Math.random() * m--);
-
     // And swap it with the current element.
     t = array[m];
     array[m] = array[i];
     array[i] = t;
   }
-
   return array;
 }
 
