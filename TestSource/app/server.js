@@ -36,12 +36,22 @@ app.get("/", function (request, response) {
   response.sendFile(__dirname + '/views/index.html');
 });
 
-app.get("/dynamic-data.txt", function (request, response) {
+app.get("/vary-fruits.txt", function (request, response) {
   response.set({"Content-Type":"text/plain; charset=UTF-8"});
-  dynamicData(response);
+  getFruitsTable(response, constWidths, constOrder);
 });
 
-const dynamicData = function(response) {
+app.get("/vary-fruits-and-widths.txt", function (request, response) {
+  response.set({"Content-Type":"text/plain; charset=UTF-8"});
+  getFruitsTable(response, variableWidths, constOrder);
+});
+
+app.get("/vary-everything.txt", function (request, response) {
+  response.set({"Content-Type":"text/plain; charset=UTF-8"});
+  getFruitsTable(response, variableWidths, variableOrder);
+});
+
+const getFruitsTable = function(response, columnSizer, columnOrderer) {
   fs.readFile('fruits.txt', 'utf8', function(err, fruits) {
     if (err) throw err;
     // Get fruit selection
@@ -52,52 +62,42 @@ const dynamicData = function(response) {
     fruits = fruits.concat(fruits.slice(0, 3)); // Take 3 duplicates.  Yes, another arbitrary number.
     fruits = shuffle(fruits);
     // Build inventory table
-    const minNameLength = fruits.reduce(function(maxLength, fruit) {
-      return fruit.length > maxLength ? fruit.length : maxLength;
-    }, 0) + 2;
-    const columns = createColumns(minNameLength);
-    const inventory = fruits.map(createRow(columns.columns));
+    const table = tableMaker(fruits, columnSizer, columnOrderer);
 
-    response.send(columns.header + '\n' + inventory.join('\n'));
+    response.send(table);
   });
 }
 
-// From https://bost.ocks.org/mike/shuffle/
-const shuffle = function(array) {
-  let m = array.length, t, i;
-  // While there remain elements to shuffle…
-  while (m) {
-    // Pick a remaining element…
-    i = Math.floor(Math.random() * m--);
-    // And swap it with the current element.
-    t = array[m];
-    array[m] = array[i];
-    array[i] = t;
-  }
-  return array;
+// Table Makers
+const tableMaker = function(fruits, columnSizer, columnOrderer) {
+  const widths = columnSizer(fruits);
+  const columns = createColumns(widths, columnOrderer);
+  const inventory = fruits.map(createRow(columns.columns));
+
+  return columns.header + '\n' + inventory.join('\n');
 }
 
-const createColumns = function (minNameLength) {
+const createColumns = function (widths, columnOrderer) {
   // Each length has two added onto the end to ensure each column is
   // separated by at least a double column of spaces.
   const columns = [
     {
       id: "name",
       name: "Product name",
-      length: minNameLength + Math.floor(Math.random() * 11) + 2
+      length: widths.name + 2
     },
     {
       id: "amount",
       name: "Amount",
-      length: 6 + 1 + 2 + Math.floor(Math.random() * 11) + 2 // ###.## + " " + "kg"
+      length: widths.amount + 2 // ###.## + " " + "kg"
     },
     {
       id: "price",
       name: "Unit price",
-      length: "Unit Price".length + Math.floor(Math.random() * 11) + 2
+      length: widths.price + 2
     }
   ];
-  shuffle(columns);
+  columnOrderer(columns);
   const header = columns.reduce((acc, column) => acc + (column.name).padEnd(column.length), "");
   const divider = "=".repeat(columns.reduce((acc, column) => acc + column.length, 0));
 
@@ -113,13 +113,67 @@ const createRow = function (columns) {
     const values = new Map();
     values.set("name", fruit.padEnd(lengths.get("name")));
     const amount = Math.floor(gammaDistribution(2.2) * 200000) / 100;
-    const space = Math.floor(Math.random() * 2) >= 1 ? " " : "";
-    const amountUnit = Math.floor(Math.random() * 2) >= 1 ? "kg" : "g";
+    const space = Math.random() >= 0.5 ? " " : "";
+    const amountUnit = Math.random() >= 0.5 ? "kg" : "g";
     values.set("amount", (amount + space + amountUnit).padEnd(lengths.get("amount")));
     const price = Math.floor(gammaDistribution(2.2) * 10000) / 100;
     values.set("price", ("$" + price).padEnd(lengths.get("price")));
     return columns.reduce((row, column) => row + values.get(column.id), "");
   }
+}
+
+// Column Sizers
+const constWidths = function() {
+  const nameWidth = 19; // Max width of any item in Fruits.txt.
+  const amountWidth = 6 + 1 + 2; // ###.## + " " + "kg"
+  const priceWidth = "Unit Price".length;
+
+  return {
+    name: nameWidth,
+    amount: amountWidth,
+    price: priceWidth
+  };
+}
+
+const variableWidths = function(fruits) {
+  const widths = constWidths();
+  widths.name = fruits.reduce(function(maxLength, fruit) {
+    return fruit.length > maxLength ? fruit.length : maxLength;
+  }, 0) + 2;
+  widths.amount = 6 + 1 + 2; // ###.## + " " + "kg"
+  widths.price = "Unit Price".length;
+
+  return {
+    name: widths.name + Math.floor(Math.random() * 11),
+    amount: widths.amount + Math.floor(Math.random() * 11),
+    price: widths.price + Math.floor(Math.random() * 11)
+  };
+}
+
+// Column Orderers
+const constOrder = function(columns) {
+  return columns;
+}
+
+const variableOrder = function(columns) {
+  return shuffle(columns);
+}
+
+// Utility functions
+
+// From https://bost.ocks.org/mike/shuffle/
+const shuffle = function(array) {
+  let m = array.length, t, i;
+  // While there remain elements to shuffle…
+  while (m) {
+    // Pick a remaining element…
+    i = Math.floor(Math.random() * m--);
+    // And swap it with the current element.
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+  return array;
 }
 
 // From https://stackoverflow.com/a/11383334
