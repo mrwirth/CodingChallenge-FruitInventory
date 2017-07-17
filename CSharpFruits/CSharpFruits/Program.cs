@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using CSharpFruitsLib;
 
 // Problem definition at
-// https://salty-impulse.glitch.me/
+// https://resonant-shoulder.glitch.me/
 
 namespace CSharpFruits
 {

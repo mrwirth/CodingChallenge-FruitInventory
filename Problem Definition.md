@@ -1,4 +1,4 @@
-# Test Your Mettle: Fruits Edition
+# Coding Challenge: Fruit Inventory
 
 ## Abstract
 Write a program that loads a text file with fruit inventory data, processes it, and displays the results on screen.

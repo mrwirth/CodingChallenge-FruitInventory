@@ -3,9 +3,9 @@
   "//2": "https://docs.npmjs.com/files/package.json",
   "//3": "updating this file will download and update your packages",
 
-  "name": "my-glitch-app",
+  "name": "coding-challenge-fruit-inventory",
   "version": "0.0.1",
-  "description": "What am I about?",
+  "description": "Presents a coding challenge with several levels of difficulty.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

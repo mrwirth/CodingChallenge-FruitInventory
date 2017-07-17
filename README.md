@@ -1,4 +1,4 @@
-# Test Your Mettle: Fruits Edition
+# Coding Challenge: Fruit Inventory
 
 This repository contains my solutions to a not-too-complex data handling problem, presented at [glitch.me](https://resonant-shoulder.glitch.me/) and with its source in the [TestSource](TestSource) directory here.
 
