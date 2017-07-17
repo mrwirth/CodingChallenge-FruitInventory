@@ -15,7 +15,7 @@ namespace CSharpFruits
     {
         static void Main(string[] args)
         {
-            var dataUrl = ConfigurationManager.AppSettings["dynamicSource"];
+            var dataUrl = ConfigurationManager.AppSettings["staticSource"];
             var fruits = from fruit in Fruits.GetFruits(dataUrl).DeduplicateBy(x => x.Name)
                          where fruit.Price >= 30
                          orderby fruit.AmountInGrams descending
