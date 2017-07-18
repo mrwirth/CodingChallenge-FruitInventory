@@ -124,9 +124,11 @@ const createRow = function (columns) {
 
 // Column Sizers
 const constWidths = function() {
-  const nameWidth = 19; // Max width of any item in Fruits.txt.
-  const amountWidth = 6 + 1 + 2; // ###.## + " " + "kg"
-  const priceWidth = "Unit Price".length;
+  // Widths are taken from static-data.txt and reduced by 2.
+  // Smaller size is to account for the space added by `createColumns`.
+  const nameWidth = 24-2;
+  const amountWidth = 16-2;
+  const priceWidth = 17-2;
 
   return {
     name: nameWidth,
