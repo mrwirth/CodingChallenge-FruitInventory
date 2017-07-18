@@ -2,31 +2,10 @@
 // where your node app starts
 
 // init project
-var express = require('express');
-var app = express();
-var fs = require('fs');
-
-// https://github.com/uxitten/polyfill/blob/master/string.polyfill.js
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
-if (!String.prototype.padEnd) {
-    String.prototype.padEnd = function padEnd(targetLength,padString) {
-        targetLength = targetLength>>0; //floor if number or convert non-number to 0;
-        padString = String(padString || ' ');
-        if (this.length > targetLength) {
-            return String(this);
-        }
-        else {
-            targetLength = targetLength-this.length;
-            if (targetLength > padString.length) {
-                padString += padString.repeat(targetLength/padString.length); //append to original to ensure we are longer than needed
-            }
-            return String(this) + padString.slice(0,targetLength);
-        }
-    };
-}
-
-// we've started you off with Express, 
-// but feel free to use whatever libs or frameworks you'd like through `package.json`.
+const express = require('express');
+const app = express();
+const fs = require('fs');
+const tools = require('./tools');
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
@@ -56,11 +35,11 @@ const getFruitsTable = function(response, columnSizer, columnOrderer) {
     if (err) throw err;
     // Get fruit selection
     fruits = fruits.split('\n');
-    fruits = shuffle(fruits);
+    fruits = tools.shuffle(fruits);
     const n = Math.floor(Math.random() * (25)) + 8; // Arbitrary sizes, nothing special.
     fruits = fruits.slice(0, n);
     fruits = fruits.concat(fruits.slice(0, 3)); // Take 3 duplicates.  Yes, another arbitrary number.
-    fruits = shuffle(fruits);
+    fruits = tools.shuffle(fruits);
     // Build inventory table
     const table = tableMaker(fruits, columnSizer, columnOrderer);
 
@@ -98,7 +77,7 @@ const createColumns = function (widths, columnOrderer) {
     }
   ];
   columnOrderer(columns);
-  const header = columns.reduce((acc, column) => acc + (column.name).padEnd(column.length), "");
+  const header = columns.reduce((acc, column) => acc + tools.padEnd(column.name, column.length), "");
   const divider = "=".repeat(columns.reduce((acc, column) => acc + column.length, 0));
 
   return {
@@ -111,13 +90,13 @@ const createRow = function (columns) {
   const lengths = columns.reduce((map, column) => map.set(column.id, column.length), new Map());
   return function(fruit) {
     const values = new Map();
-    values.set("name", fruit.padEnd(lengths.get("name")));
-    const amount = Math.floor(gammaDistribution(2.2) * 200000) / 100;
+    values.set("name", tools.padEnd(fruit, lengths.get("name")));
+    const amount = Math.floor(tools.gammaDistribution(2.2) * 200000) / 100;
     const space = Math.random() >= 0.5 ? " " : "";
     const amountUnit = Math.random() >= 0.5 ? "kg" : "g";
-    values.set("amount", (amount + space + amountUnit).padEnd(lengths.get("amount")));
-    const price = Math.floor(gammaDistribution(2.2) * 10000) / 100;
-    values.set("price", ("$" + price).padEnd(lengths.get("price")));
+    values.set("amount", tools.padEnd((amount + space + amountUnit), lengths.get("amount")));
+    const price = Math.floor(tools.gammaDistribution(2.2) * 10000) / 100;
+    values.set("price", tools.padEnd(("$" + price), lengths.get("price")));
     return columns.reduce((row, column) => row + values.get(column.id), "");
   }
 }
@@ -142,7 +121,7 @@ const variableWidths = function(fruits) {
   widths.name = fruits.reduce(function(maxLength, fruit) {
     return fruit.length > maxLength ? fruit.length : maxLength;
   }, 0) + 2;
-  widths.amount = 6 + 1 + 2; // ###.## + " " + "kg"
+  widths.amount = 7 + 1 + 2; // ####.## + " " + "kg"
   widths.price = "Unit Price".length;
 
   return {
@@ -158,33 +137,10 @@ const constOrder = function(columns) {
 }
 
 const variableOrder = function(columns) {
-  return shuffle(columns);
-}
-
-// Utility functions
-
-// From https://bost.ocks.org/mike/shuffle/
-const shuffle = function(array) {
-  let m = array.length, t, i;
-  // While there remain elements to shuffle…
-  while (m) {
-    // Pick a remaining element…
-    i = Math.floor(Math.random() * m--);
-    // And swap it with the current element.
-    t = array[m];
-    array[m] = array[i];
-    array[i] = t;
-  }
-  return array;
-}
-
-// From https://stackoverflow.com/a/11383334
-// Gamma values > 1 will bias leftward, < 1 rightward.
-const gammaDistribution = function (gamma) {
-    return Math.pow(Math.random(), gamma);    // mix full range and bias
+  return tools.shuffle(columns);
 }
 
 // listen for requests :)
-var listener = app.listen(process.env.PORT, function () {
+const listener = app.listen(process.env.PORT, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
