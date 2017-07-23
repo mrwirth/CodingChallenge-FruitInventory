@@ -16,7 +16,8 @@ namespace CSharpFruits
         static void Main(string[] args)
         {
             var dataUrl = ConfigurationManager.AppSettings["variedEverythingSource"];
-            var fruits = from fruit in Fruits.GetFruits(dataUrl).DeduplicateBy(x => x.Name)
+            var rawData = FetchData(dataUrl);
+            var fruits = from fruit in Fruits.GetFruits(rawData).DeduplicateBy(x => x.Name)
                          where fruit.Price >= 30
                          orderby fruit.AmountInGrams descending
                          select fruit;
@@ -27,6 +28,14 @@ namespace CSharpFruits
                 Console.WriteLine($"{fruit.Name,20}\t${fruit.Price:#,0.00#}\t{fruit.Amount:#,0.00#} {fruit.AmountUnit}");
             }
             Console.ReadLine();
+        }
+
+        private static string FetchData(string url)
+        {
+            using (var client = new System.Net.WebClient())
+            {
+                return client.DownloadString(url);
+            }
         }
     }
 }

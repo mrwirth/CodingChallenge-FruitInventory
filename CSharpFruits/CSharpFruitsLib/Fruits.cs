@@ -9,17 +9,9 @@ namespace CSharpFruitsLib
 {
     public static class Fruits
     {
-        public static IEnumerable<Fruit> GetFruits(string url)
+        public static IEnumerable<Fruit> GetFruits(string rawData)
         {
-            return FetchData(url).SplitData().ParseData();
-        }
-
-        private static string FetchData(string url)
-        {
-            using (var client = new System.Net.WebClient())
-            {
-                return client.DownloadString(url);
-            }
+            return rawData.SplitData().ParseData();
         }
 
         private static (string, IEnumerable<string>) SplitData(this string data)
