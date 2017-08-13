@@ -17,7 +17,7 @@ namespace CSharpFruits
         {
             var dataUrl = ConfigurationManager.AppSettings["variedEverythingSource"];
             var rawData = FetchData(dataUrl);
-            var fruits = from fruit in Fruits.GetFruits(rawData).DeduplicateBy(x => x.Name)
+            var fruits = from fruit in Fruits.ParseTable(rawData).DeduplicateBy(x => x.Name)
                          where fruit.Price >= 30
                          orderby fruit.AmountInGrams descending
                          select fruit;
