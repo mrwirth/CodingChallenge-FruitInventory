@@ -106,7 +106,7 @@ namespace CSharpFruitsLib
             return new Fruit(name, price, amount, amountUnit);
         }
 
-        public static IEnumerable<Fruit> DeduplicateBy<T>(this IEnumerable<Fruit> fruits, Func<Fruit, T> key)
+        public static IEnumerable<Fruit> DistinctBy<T>(this IEnumerable<Fruit> fruits, Func<Fruit, T> key)
         {
             var seen = new HashSet<T>();
             foreach (var fruit in fruits)
@@ -118,11 +118,6 @@ namespace CSharpFruitsLib
                 }
             }
             yield break;
-        }
-
-        public static IEnumerable<Fruit> Deduplicate(this IEnumerable<Fruit> fruits)
-        {
-            return fruits.DeduplicateBy(x => x);
         }
     }
 }
