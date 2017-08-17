@@ -15,7 +15,7 @@ namespace CSharpFruits
     {
         static void Main(string[] args)
         {
-            var dataUrl = ConfigurationManager.AppSettings["variedEverythingSource"];
+            var dataUrl = ConfigurationManager.AppSettings["variedFruitsWidthsAndOrderSource"];
             var rawData = FetchData(dataUrl);
             var fruits = 
                 Fruits.ParseTable(rawData)
