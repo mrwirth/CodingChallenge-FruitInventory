@@ -125,7 +125,7 @@ namespace CSharpFruitsLib
         private static decimal ParsePrice(string row, ColumnData priceColumn)
         {
             var columnText = row.Substring(priceColumn.Start, priceColumn.Length);
-            if(!decimal.TryParse(columnText, NumberStyles.Currency, new CultureInfo("en-US"), out var price))
+            if(!decimal.TryParse(columnText, NumberStyles.Currency, new CultureInfo("en-US", false), out var price))
             {
                 throw new ArgumentException("Row does not contain a parseable Price column quantity.", "row");
             }
