@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -94,16 +95,40 @@ namespace CSharpFruitsLib
         {
             var (nameColumn, priceColumn, amountColumn) = columns;
 
-            var numberPattern = new Regex(@"[0-9.]+");
-            var unitPattern = new Regex(@"[A-Za-z]+");
-
             var name = row.Substring(nameColumn.Start, nameColumn.Length).Trim();
-            var amountText = row.Substring(amountColumn.Start, amountColumn.Length).Trim();
-            var amount = decimal.Parse(numberPattern.Match(amountText).Value);
-            var amountUnit = unitPattern.Match(amountText).Value.Trim();
-            var priceText = row.Substring(priceColumn.Start, priceColumn.Length).Trim();
-            var price = decimal.Parse(numberPattern.Match(priceText).Value);
-            return new Fruit(name, price, amount, amountUnit);
+            var amount = ParseAmount(row, amountColumn);
+            var price = ParsePrice(row, priceColumn);
+            return new Fruit(name, price, amount.quantity, amount.unit);
+        }
+
+        private static (decimal quantity, string unit) ParseAmount(string row, ColumnData amountColumn)
+        {
+            // I've profiled a few alternatives to extracting the `quantityText` value from the column text:
+            // * TakeWhile -> char[] -> new string
+            // * TakeWhile -> Count -> Substring
+            // * IndexOfAny(char[]_of_all_letters) -> Substring
+            // And this version was consistently fastest.
+            var columnText = row.Substring(amountColumn.Start, amountColumn.Length);
+            var unitStart = columnText.TakeWhile(c => !Char.IsLetter(c)).Count();
+            var quantityText = columnText.Substring(0, unitStart);
+            var unit = columnText.Substring(unitStart).Trim();
+            if(!decimal.TryParse(quantityText, NumberStyles.Number, new CultureInfo("en-US", false), out var quantity))
+            {
+                throw new ArgumentException("Row does not contain a parseable Amount column quantity.", "row");
+            }
+
+            return (quantity, unit);
+        }
+
+        private static decimal ParsePrice(string row, ColumnData priceColumn)
+        {
+            var columnText = row.Substring(priceColumn.Start, priceColumn.Length);
+            if(!decimal.TryParse(columnText, NumberStyles.Currency, new CultureInfo("en-US"), out var price))
+            {
+                throw new ArgumentException("Row does not contain a parseable Price column quantity.", "row");
+            }
+
+            return price;
         }
 
         public static IEnumerable<Fruit> DistinctBy<T>(this IEnumerable<Fruit> fruits, Func<Fruit, T> key)
