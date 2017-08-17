@@ -4,11 +4,11 @@ namespace CSharpFruitsLib
 {
     public class Fruit
     {
-        public string Name { get; }
-        public decimal Price { get; }
-        public decimal Amount { get; }
-        public string AmountUnit { get; }
-        public decimal AmountInGrams { get; }
+        public string Name { get; protected set; }
+        public decimal Price { get; protected set; }
+        public decimal Amount { get; protected set; }
+        public string AmountUnit { get; protected set; }
+        public decimal AmountInGrams { get; protected set; }
 
         public Fruit(string name, decimal price, decimal amount, string amountUnit)
         {
@@ -19,7 +19,7 @@ namespace CSharpFruitsLib
             AmountInGrams = NormalizeWeight(amount, amountUnit);
         }
 
-        private static decimal NormalizeWeight(decimal amount, string amountUnit)
+        protected static decimal NormalizeWeight(decimal amount, string amountUnit)
         {
             if (amountUnit == "g") { return amount; };
             if (amountUnit == "kg") { return amount * 1000; };
