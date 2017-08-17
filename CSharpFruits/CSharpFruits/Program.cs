@@ -17,10 +17,11 @@ namespace CSharpFruits
         {
             var dataUrl = ConfigurationManager.AppSettings["variedEverythingSource"];
             var rawData = FetchData(dataUrl);
-            var fruits = from fruit in Fruits.ParseTable(rawData).DistinctBy(x => x.Name)
-                         where fruit.Price >= 30
-                         orderby fruit.AmountInGrams descending
-                         select fruit;
+            var fruits = 
+                Fruits.ParseTable(rawData)
+                .DistinctBy(x => x.Name)
+                .Where(x => x.Price >= 30.00m)
+                .OrderByDescending(x => x.AmountInGrams);
             foreach (var fruit in fruits)
             {
                 // Slight cheating here: I know the length of the longest fruit name,
