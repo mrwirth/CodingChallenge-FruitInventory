@@ -47,6 +47,7 @@ namespace CSharpFruitsLib
         public static IEnumerable<Fruit> ParseTable(string table)
         {
             var rows = table.Split('\n');
+            if (rows.Length < 2) { throw new ArgumentException("Argument is not in a table format recognized by this library.", "table"); }
             var header = rows[0];
             var columns = ParseHeader(header);
             var data = rows.Skip(2);
@@ -75,6 +76,7 @@ namespace CSharpFruitsLib
 
         private static ColumnDataSet ParseHeader(string header)
         {
+            if (header is null) { throw new ArgumentNullException("header"); }
             var nameColumn = FindColumnData("Product name", header);
             var priceColumn = FindColumnData("Unit price", header);
             var amountColumn = FindColumnData("Amount", header);
