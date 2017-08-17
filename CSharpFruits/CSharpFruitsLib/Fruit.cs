@@ -4,10 +4,16 @@ namespace CSharpFruitsLib
 {
     public class Fruit
     {
+        public enum MassUnit
+        {
+            g = 1,
+            kg = 1000
+        }
+
         public string Name { get; protected set; }
         public decimal Price { get; protected set; }
         public decimal Amount { get; protected set; }
-        public string AmountUnit { get; protected set; }
+        public MassUnit AmountUnit { get; protected set; }
         public decimal AmountInGrams { get; protected set; }
 
         public Fruit(string name, decimal price, decimal amount, string amountUnit)
@@ -15,15 +21,17 @@ namespace CSharpFruitsLib
             Name = name;
             Price = price;
             Amount = amount;
-            AmountUnit = amountUnit;
-            AmountInGrams = NormalizeWeight(amount, amountUnit);
+            (AmountInGrams, AmountUnit) = NormalizeWeight(amount, amountUnit);
         }
 
-        protected static decimal NormalizeWeight(decimal amount, string amountUnit)
+        protected static (decimal amountInGrams, MassUnit amountUnit) NormalizeWeight(decimal amount, string amountUnit)
         {
-            if (amountUnit == "g") { return amount; };
-            if (amountUnit == "kg") { return amount * 1000; };
-            throw new ArgumentOutOfRangeException("amountUnit", amountUnit, "Only g and kg are currently supported.");
+            if(!Enum.TryParse(amountUnit, out MassUnit unit))
+            {
+                throw new ArgumentOutOfRangeException("amountUnit", amountUnit, "Only g and kg are currently supported.");
+            }
+
+            return (amount * (int)unit, unit);
         }
 
         public override string ToString()
