@@ -103,13 +103,8 @@ namespace CSharpFruitsLib
 
         private static (decimal quantity, string unit) ParseAmount(string row, ColumnData amountColumn)
         {
-            // I've profiled a few alternatives to extracting the `quantityText` value from the column text:
-            // * TakeWhile -> char[] -> new string
-            // * TakeWhile -> Count -> Substring
-            // * IndexOfAny(char[]_of_all_letters) -> Substring
-            // And this version was consistently fastest.
             var columnText = row.Substring(amountColumn.Start, amountColumn.Length);
-            var unitStart = columnText.TakeWhile(c => !Char.IsLetter(c)).Count();
+            var unitStart = columnText.IndexOf(c => Char.IsLetter(c));
             var quantityText = columnText.Substring(0, unitStart);
             var unit = columnText.Substring(unitStart).Trim();
             if(!decimal.TryParse(quantityText, NumberStyles.Number, new CultureInfo("en-US", false), out var quantity))
@@ -129,6 +124,16 @@ namespace CSharpFruitsLib
             }
 
             return price;
+        }
+
+        public static int IndexOf(this string s, Func<char, bool> predicate)
+        {
+            int i;
+            for (i = 0; i < s.Length; i++)
+            {
+                if (predicate(s[i])) { return i; }
+            }
+            return -1;
         }
 
         public static IEnumerable<Fruit> DistinctBy<T>(this IEnumerable<Fruit> fruits, Func<Fruit, T> key)
