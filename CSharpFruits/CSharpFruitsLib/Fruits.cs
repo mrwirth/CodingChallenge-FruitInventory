@@ -1,96 +1,142 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace CSharpFruitsLib
 {
-    public class Fruit
-    {
-        public string Name { get; }
-        public decimal Price { get; }
-        public decimal Amount { get; }
-        public string AmountUnit { get; }
-        public decimal AmountInGrams { get; }
-
-        public Fruit(string name, decimal price, decimal amount, string amountUnit)
-        {
-            Name = name;
-            Price = price;
-            Amount = amount;
-            AmountUnit = amountUnit;
-            AmountInGrams = NormalizeWeight(amount, amountUnit);
-        }
-
-        private static decimal NormalizeWeight(decimal amount, string amountUnit)
-        {
-            if (amountUnit == "g") { return amount; };
-            if (amountUnit == "kg") { return amount * 1000; };
-            throw new ArgumentOutOfRangeException("amountUnit", amountUnit, "Only g and kg are currently supported.");
-        }
-
-        public override string ToString()
-        {
-            return Name + "\t$" + Price + "\t" + Amount + " " + AmountUnit;
-        }
-    }
-
     public static class Fruits
     {
-        public static IEnumerable<Fruit> GetFruits(string url)
+        private struct ColumnData
         {
-            return FetchData(url).SplitData().ParseData();
-        }
+            public int Start { get; } // Start index for column
+            public int Length { get; } // Length of column
 
-        private static string FetchData(string url)
-        {
-            using (var client = new System.Net.WebClient())
+            public ColumnData(int start, int length)
             {
-                return client.DownloadString(url);
+                Start = start;
+                Length = length;
             }
         }
 
-        private static (string, IEnumerable<string>) SplitData(this string data)
+        private struct ColumnDataSet
         {
-            var rows = data.Split('\n');
-            var headerRow = rows[0];
-            var dataRows = rows.Skip(2);
-            return (headerRow, dataRows);
+            public ColumnData NameColumn { get; }
+            public ColumnData PriceColumn { get; }
+            public ColumnData AmountColumn { get; }
+
+            public ColumnDataSet(ColumnData nameColumn, ColumnData priceColumn, ColumnData amountColumn)
+            {
+                NameColumn = nameColumn;
+                PriceColumn = priceColumn;
+                AmountColumn = amountColumn;
+            }
+
+            public void Deconstruct(out ColumnData nameColumn, out ColumnData priceColumn, out ColumnData amountColumn)
+            {
+                nameColumn = NameColumn;
+                priceColumn = PriceColumn;
+                amountColumn = AmountColumn;
+            }
         }
 
-        private static IEnumerable<Fruit> ParseData(this (string header, IEnumerable<string> rows) data)
+        public static IEnumerable<Fruit> ParseTable(string table)
         {
-            var names = FindIndexes("Product name", data.header);
-            var prices = FindIndexes("Unit price", data.header);
-            var amounts = FindIndexes("Amount", data.header);
-
-            var numberPattern = new Regex(@"[0-9.]+");
-            var unitPattern = new Regex(@"[A-Za-z]+");
-            foreach (var row in data.rows)
+            var rows = table.Split('\n');
+            if (rows.Length < 2) { throw new ArgumentException("Argument is not in a table format recognized by this library.", "table"); }
+            var header = rows[0];
+            var columns = ParseHeader(header);
+            var data = rows.Skip(2);
+            foreach (var row in data)
             {
-                var name = row.Substring(names.start, names.length).Trim();
-                var amountText = row.Substring(amounts.start, amounts.length).Trim();
-                var amount = decimal.Parse(numberPattern.Match(amountText).Value);
-                var amountUnit = unitPattern.Match(amountText).Value.Trim();
-                var priceText = row.Substring(prices.start, prices.length).Trim();
-                var price = decimal.Parse(numberPattern.Match(priceText).Value);
-                yield return new Fruit(name, price, amount, amountUnit);
+                yield return ParseRow(row, columns);
             }
             yield break;
         }
 
-        private static (int start, int length) FindIndexes(string columnName, string header)
+        public static IEnumerable<Fruit> ParseTable(Stream stream)
+        {
+            using (var reader = new StreamReader(stream))
+            {
+                var header = reader.ReadLine();
+                var columns = ParseHeader(header);
+                reader.ReadLine(); // Skip divider line.
+                string row;
+                while ((row = reader.ReadLine()) != null)
+                {
+                    yield return ParseRow(row, columns);
+                }
+            }
+            yield break;
+        }
+
+        private static ColumnDataSet ParseHeader(string header)
+        {
+            if (header is null) { throw new ArgumentNullException("header"); }
+            var nameColumn = FindColumnData("Product name", header);
+            var priceColumn = FindColumnData("Unit price", header);
+            var amountColumn = FindColumnData("Amount", header);
+
+            return new ColumnDataSet(nameColumn, priceColumn, amountColumn);
+        }
+
+        private static ColumnData FindColumnData(string columnName, string header)
         {
             var pattern = new Regex(columnName + @"\s+");
             var match = pattern.Match(header);
             var start = match.Index;
             var length = match.Length;
-            return (start, length);
+            return new ColumnData(start, length);
         }
 
-        public static IEnumerable<Fruit> DeduplicateBy<T>(this IEnumerable<Fruit> fruits, Func<Fruit, T> key)
+        private static Fruit ParseRow(string row, ColumnDataSet columns)
+        {
+            var (nameColumn, priceColumn, amountColumn) = columns;
+
+            var name = row.Substring(nameColumn.Start, nameColumn.Length).Trim();
+            var amount = ParseAmount(row, amountColumn);
+            var price = ParsePrice(row, priceColumn);
+            return new Fruit(name, price, amount.quantity, amount.unit);
+        }
+
+        private static (decimal quantity, string unit) ParseAmount(string row, ColumnData amountColumn)
+        {
+            var columnText = row.Substring(amountColumn.Start, amountColumn.Length);
+            var unitStart = columnText.IndexOf(c => Char.IsLetter(c));
+            var quantityText = columnText.Substring(0, unitStart);
+            var unit = columnText.Substring(unitStart).Trim();
+            if(!decimal.TryParse(quantityText, NumberStyles.Number, new CultureInfo("en-US", false), out var quantity))
+            {
+                throw new ArgumentException("Row does not contain a parseable Amount column quantity.", "row");
+            }
+
+            return (quantity, unit);
+        }
+
+        private static decimal ParsePrice(string row, ColumnData priceColumn)
+        {
+            var columnText = row.Substring(priceColumn.Start, priceColumn.Length);
+            if(!decimal.TryParse(columnText, NumberStyles.Currency, new CultureInfo("en-US", false), out var price))
+            {
+                throw new ArgumentException("Row does not contain a parseable Price column quantity.", "row");
+            }
+
+            return price;
+        }
+
+        public static int IndexOf(this string s, Func<char, bool> predicate)
+        {
+            int i;
+            for (i = 0; i < s.Length; i++)
+            {
+                if (predicate(s[i])) { return i; }
+            }
+            return -1;
+        }
+
+        public static IEnumerable<Fruit> DistinctBy<T>(this IEnumerable<Fruit> fruits, Func<Fruit, T> key)
         {
             var seen = new HashSet<T>();
             foreach (var fruit in fruits)
@@ -102,11 +148,6 @@ namespace CSharpFruitsLib
                 }
             }
             yield break;
-        }
-
-        public static IEnumerable<Fruit> Deduplicate(this IEnumerable<Fruit> fruits)
-        {
-            return fruits.DeduplicateBy(x => x);
         }
     }
 }
