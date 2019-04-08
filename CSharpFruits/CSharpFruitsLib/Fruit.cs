@@ -21,18 +21,22 @@ namespace CSharpFruitsLib
             Name = name;
             Price = price;
             Amount = amount;
-            (AmountInGrams, AmountUnit) = NormalizeWeight(amount, amountUnit);
+            AmountUnit = ParseUnit(amountUnit);
+            AmountInGrams = NormalizeWeight(amount, AmountUnit);
         }
 
-        protected static (decimal amountInGrams, MassUnit amountUnit) NormalizeWeight(decimal amount, string amountUnit)
+        protected static MassUnit ParseUnit(string amountUnit)
         {
-            if(!Enum.TryParse(amountUnit, out MassUnit unit))
+            if (!Enum.TryParse(amountUnit, out MassUnit unit))
             {
                 throw new ArgumentOutOfRangeException("amountUnit", amountUnit, "Only g and kg are currently supported.");
             }
 
-            return (amount * (int)unit, unit);
+            return unit;
         }
+
+        protected static decimal NormalizeWeight(decimal amount, MassUnit amountUnit)
+            => amount * (int)amountUnit;
 
         public override string ToString()
         {
