@@ -35,6 +35,7 @@ namespace CSharpFruits
         {
             using (var client = new System.Net.WebClient())
             {
+                client.Headers.Add("user-agent", "mettletest-fruits");
                 return client.DownloadString(url);
             }
         }
